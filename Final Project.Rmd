@@ -58,7 +58,6 @@ ggplot(data=wrangled_budget,
        title="Distribution of Budget for Movies that Pass vs Fail")+ #tidying up labels
   geom_boxplot(fill = "#112446") +
   theme_minimal()
-  #coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
 To resolve this issue, we added a line of code that excluded outliers from the visualization. From this plot, we can see that, overall, the movies that failed the test had slightly higher summary statistics for their budgets.
 
