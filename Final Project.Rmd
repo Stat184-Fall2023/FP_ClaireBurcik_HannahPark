@@ -1,10 +1,11 @@
 ---
 title: "The Bechdel Test Data Analysis"
 author: "Claire Burcik and Hannah Park"
-output: 
-  html_document: default
-  pdf_document: default
 date: "`r paste('Last Updated:', Sys.Date())`"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,8 +29,7 @@ The research questions we wanted to explore with this data set include:
 -How does the domestic and international gross compare to the pass rate of the Bechdel test and the movie’s budget?
 
 ### Data Exploration
-
-```{r}
+```{r, include=FALSE}
 #ADD CODING STYLE
 #reading in the data
 bechdel_raw <- read.csv("movies.csv")
@@ -42,7 +42,9 @@ library(kableExtra)
 library(janitor)
 ```
 
-```{r}
+To begin our data exploration, we wanted to take a look at the relationship between budget and the test results. First, we created a box and whisker plot to display the distribution among movies that pass and movies that fail. Because of some extreme outliers, our initial box plot was difficult to read. You couldn't get a good idea of the differences between statistics like the median, Q1, and Q3 for movies that passed vs failed because the intervals on the plot were so large.
+
+```{r, echo=FALSE}
 wrangled_budget<-bechdel_raw %>%
   group_by(clean_test)%>%
   select(clean_test, binary, budget)
@@ -56,56 +58,5 @@ ggplot(data=wrangled_budget,
        title="Distribution of Budget for Movies that Pass vs Fail")+ #tidying up labels
   geom_boxplot(fill = "#112446") +
   theme_minimal()
-
-#more detailed
-ggplot(data=wrangled_budget, 
-  mapping=aes(x = budget, y = clean_test))+
-  #swapped out y axis value "binary" for "clean_test"
-  #gives distribution of budget across categories (pass or fail(which criteria it failed))
-  labs(x="Budget ($)",
-       y="Test Result",
-       title="Distribution of Budget for Movies that Pass vs Fail (Detailed)")+  #tidying up labels
-  geom_boxplot(fill = "#EF562D")+ #changing color to orange
-  theme_minimal() 
-```
-
-```{r}
-frequency_data <- bechdel_raw %>%
-  group_by(clean_test)%>%
-  #reduce to just failure cases
-  filter(binary=="FAIL")%>%
-  select(clean_test, decade.code)
-
-failure_table <-frequency_data %>%
-   #makes the decade.code correspond to rows and clean_test correspond to columns
-   tabyl(decade.code, clean_test)%>%
-   adorn_totals(where = c("row", "col") ) %>%
-   adorn_percentages(denominator = "all") %>%
-   adorn_pct_formatting(digits = 2) %>% 
-   #Change labels
-   adorn_title(
-     placement = "combined",
-     row_name = "Decade",
-     col_name = "Test Results") 
- 
-#add absolute frequencies
-formatNs <- attr(failure_table, "core") %>%  
-  adorn_totals(where = c("row", "col")) %>%
-  mutate(
-     across(.cols = where(is.numeric), .fns = ~format(.x, big.mark = ","))
-   )
- 
-failure_freq_tab <- failure_table %>%
-  adorn_ns(position= "front", ns = formatNs)
-
-failure_freq_tab %>%
-   kable(
-     caption = "Number of Failures per Decade, per Criteria", #add title
-     booktabs = TRUE,
-     align = c("l", rep("c", 6))
-   )%>%
-   kableExtra::kable_styling(
-       bootstrap_options = c("striped"),
-       font_size = 16
-     )
+  #coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
