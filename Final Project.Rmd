@@ -27,7 +27,7 @@ library(janitor)
 ```{r}
 wrangled_budget<-bechdel_raw %>%
   group_by(clean_test)%>%
-  select(title, clean_test, binary, budget)
+  select(clean_test, binary, budget)
 
 #basic pass/fail plot
 ggplot(data=wrangled_budget,
