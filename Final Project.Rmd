@@ -10,6 +10,24 @@ date: "`r paste('Last Updated:', Sys.Date())`"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+### The Bechdel Test Dataset
+
+Over the last few decades, fans and critics alike have increasignly called out gender bias in the film industry. More specifically, many have recognized a lack of depth, low numbers of leads, and sterotypical roles for female characters. One way to measure this bias, first coined by cartoonist Alison Bechdel in 1985, is the Bechdel Test. If a movie passes the Bechdel test, it is said that the movie gave the female charcters a bare minimum level of depth. The test has three criteria that a movie must meet in order to pass. The three criteria are:
+1. There are at least two named women
+2. They Have a conversation with each other at some point
+3. That conversation isn't about a male character
+
+This test is not by any means an offical metric. Like Bechdel's original intention, it is mostly used to poke fun at the lack of female character development in Hollywood. So, when we saw a dataset that evaluated movies based on this test, we thought that it would be a fun data set to analyze.
+
+The data set was sourced from FiveThirtyEight and it combined data from two previous data sets (BechdelTest.com for the Bechdel Test results and Numbers.com for the financial information). The data consists of 1615 realeased from 1990-2013. The attributes in this dataset are release year, Imdb code, Title, Test (states"ok" if movie passed, otherwise states the crteria that made the movie fail. The creators of the dataset also state whether they disagree with the result of the test), Clean test (same as Test but without the creators stating if they disagree), Binary (PASS or FAIL), Domestic Gross, International Gross, Code (year/PASS or FAIL), Budget, Domestic gross (as of 2013), International gross (as of 2013), Period code, and Decade code.
+
+The research questions we wanted to explore with this data set include:
+-Does budget play a role in whether a movie passes or fails the Bechdel Test?
+-Does the year the movie was released contribute to if a movie passes or fails the Bechdel Test?
+-Of the movies that fail the Bechdel Test, how many fail each criteria?
+-How does the domestic and international gross compare to the pass rate of the Bechdel test and the movie’s budget?
+
+### Data Exploration
 
 ```{r}
 #ADD CODING STYLE
