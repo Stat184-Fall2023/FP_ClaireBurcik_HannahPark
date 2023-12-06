@@ -16,4 +16,78 @@ knitr::opts_chunk$set(echo = TRUE)
 #reading in the data
 bechdel_raw <- read.csv("movies.csv")
 View(bechdel_raw)
+
+#loading necessary packages
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+library(janitor)
+```
+
+```{r}
+wrangled_budget<-bechdel_raw %>%
+  group_by(clean_test)%>%
+  select(title, clean_test, binary, budget)
+
+#basic pass/fail plot
+ggplot(data=wrangled_budget,
+  mapping=aes(x = budget, y = binary)) + #binary=pass/fail test results
+  #made boxplots have horizontal orientation-->more appealing to the eye
+  labs(x="Budget ($)",
+       y="Test Result",
+       title="Distribution of Budget for Movies that Pass vs Fail")+ #tidying up labels
+  geom_boxplot(fill = "#112446") +
+  theme_minimal()
+
+#more detailed
+ggplot(data=wrangled_budget, 
+  mapping=aes(x = budget, y = clean_test))+
+  #swapped out y axis value "binary" for "clean_test"
+  #gives distribution of budget across categories (pass or fail(which criteria it failed))
+  labs(x="Budget ($)",
+       y="Test Result",
+       title="Distribution of Budget for Movies that Pass vs Fail (Detailed)")+  #tidying up labels
+  geom_boxplot(fill = "#EF562D")+ #changing color to orange
+  theme_minimal() 
+```
+
+```{r}
+frequency_data <- bechdel_raw %>%
+  group_by(clean_test)%>%
+  #reduce to just failure cases
+  filter(binary=="FAIL")%>%
+  select(clean_test, decade.code)
+
+failure_table <-frequency_data %>%
+   #makes the decade.code correspond to rows and clean_test correspond to columns
+   tabyl(decade.code, clean_test)%>%
+   adorn_totals(where = c("row", "col") ) %>%
+   adorn_percentages(denominator = "all") %>%
+   adorn_pct_formatting(digits = 2) %>% 
+   #Change labels
+   adorn_title(
+     placement = "combined",
+     row_name = "Decade",
+     col_name = "Test Results") 
+ 
+#add absolute frequencies
+formatNs <- attr(failure_table, "core") %>%  
+  adorn_totals(where = c("row", "col")) %>%
+  mutate(
+     across(.cols = where(is.numeric), .fns = ~format(.x, big.mark = ","))
+   )
+ 
+failure_freq_tab <- failure_table %>%
+  adorn_ns(position= "front", ns = formatNs)
+
+failure_freq_tab %>%
+   kable(
+     caption = "Number of Failures per Decade, per Criteria", #add title
+     booktabs = TRUE,
+     align = c("l", rep("c", 6))
+   )%>%
+   kableExtra::kable_styling(
+       bootstrap_options = c("striped"),
+       font_size = 16
+     )
 ```
