@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = False)
 ```
 ### The Bechdel Test Dataset
 
@@ -44,7 +44,7 @@ library(janitor)
 
 To begin our data exploration, we wanted to take a look at the relationship between budget and the test results. First, we created a box and whisker plot to display the distribution among movies that pass and movies that fail. Because of some extreme outliers, our initial box plot was difficult to read. You couldn't get a good idea of the differences between statistics like the median, Q1, and Q3 for movies that passed vs failed because the intervals on the plot were so large.
 
-```{r, echo=FALSE}
+```{r}
 wrangled_budget<-bechdel_raw %>%
   group_by(clean_test)%>%
   select(clean_test, binary, budget)
@@ -60,3 +60,38 @@ ggplot(data=wrangled_budget,
   theme_minimal()
   #coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
+To resolve this issue, we added a line of code that excluded outliers from the visualization. From this plot, we can see that, overall, the movies that failed the test had slightly higher summary statistics for their budgets.
+
+In addition, we wanted to explore further and compare the distributions of budget among movies that passed, movies that failed due to having no lead women characters, films that failed due to the female characters not talking to each other, movies that failed due to the conversations being about men, and those that were considered dubious. This visual painted a slightly different picture. For all criteria except for no talk, the median budgets varied by a small interval. However, the Q3 values for all of the failing criteria were greater than the movies that passed (ok). 
+
+```{r}
+ggplot(data=wrangled_budget,
+  mapping=aes(x = budget, y = binary)) + #binary=pass/fail test results
+  #made boxplots have horizontal orientation-->more appealing to the eye
+  labs(x="Budget ($)",
+       y="Test Results",
+       title="Distribution of Budget for Movies that Pass vs Fail")+ #tidying up labels
+  geom_boxplot(fill = "#112446") +
+  theme_minimal()+
+  coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
+#more detailed
+ggplot(data=wrangled_budget, 
+  mapping=aes(x = budget, y = clean_test))+
+  #swapped out y axis value "binary" for "clean_test"
+  #gives distribution of budget across categories (pass or fail(which criteria it failed))
+  labs(x="Budget ($)",
+       y="Test Results",
+       title="Distribution of Budget for Movies that Pass vs Fail (Detailed)")+  #tidying up labels
+  geom_boxplot(fill = "#EF562D")+ #changing color to orange
+  theme_minimal() +
+  coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
+```
+
+
+
+
+
+
+
+
+
