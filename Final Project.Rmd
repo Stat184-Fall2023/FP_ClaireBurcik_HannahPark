@@ -85,7 +85,38 @@ ggplot(data=wrangled_budget,
   theme_minimal() +
   coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
+```{r}
+bechdel_raw<- read.table (
+  file = "/Users/hpark/Desktop/movies.csv",
+  fill = TRUE,
+  header = TRUE,
+  quote = "",
+  sep = ","
+)
+  
+  
+#Load the packages 
+library(magrittr)-
+library(dplyr)-
+library(ggplot2)
 
+#creates a table that only has the year and binary column if the movie passed or failed
+wrangled_year_pass_fail<- bechdel_raw %>%
+  group_by(year) %>%
+  filter(binary = "FAIL" | binary = "PASS")%>% #only included rows that have Pass or-Fail in the binary column~
+  select(year,binary) #only included the columns year and binary
+  
+  
+#counts the frequency based on the year on if it passed or failed
+count_pass_fail <- wrangled_year_pass_fail %>% group_by(year,binary) %>% summarise(count=n())
+
+#graphs the data as a stacked box plot 
+ggplot(count_pass_fail,
+  aes(fill=binary, y=count, x=year))+ geom_bar(position='stack', stat='identity')+
+  labs(title = "Year of Release Compared to if the Movie Passed or Failed",
+       x = "Year",
+       y = "Total Movies per year")
+```
 
 
 
