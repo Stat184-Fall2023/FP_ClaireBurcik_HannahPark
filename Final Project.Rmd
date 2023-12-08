@@ -93,12 +93,8 @@ bechdel_raw<- read.table (
   quote = "",
   sep = ","
 )
-  
-  
 #Load the packages 
-library(magrittr)-
-library(dplyr)-
-library(ggplot2)
+library(magrittr)
 
 #creates a table that only has the year and binary column if the movie passed or failed
 wrangled_year_pass_fail<- bechdel_raw %>%
@@ -118,8 +114,103 @@ ggplot(count_pass_fail,
        y = "Total Movies per year")
 ```
 
+```{r}
+bechdel_raw <- read.table ( 
+  file = "/Users/hpark/Desktop/movies.csv",
+  fill = TRUE,
+  header = TRUE, 
+  quote = "",
+  sep = ","
+)
 
+#creates a table that only has the columns title, year, domgross,intgross,and binary.
+#the table also only contains if the binary column has either Pass or Fail
+wrangled_gross_pass_fail <- bechdel_raw %>%
+  group_by(binary) %>%
+  filter(binary == "FAIL" | binary == "PASS")%>% 
+  select(title, year,domgross,intgross,binary) 
 
+##################PASSED - DOMESTIC - TOP 15########################################
+
+#Filters the data further to only contain movies that has passed
+wrangled_pass <- wrangled_gross_pass_fail %>% 
+  group_by(domgross) %>%
+  filter(binary == "PASS")%>%
+  select(title, year,domgross,binary)
+
+#orders the domestic gross numbers in decreasing order
+w_test <- wrangled_pass[order(wrangled_pass$domgross, decreasing = TRUE),]  
+
+#gets rid of rows that should not be there
+w_test <- w_test[-c(1,4, 11,10),]
+
+#takes the top 15 movies
+w_test <- w_test[1:15, ]
+
+#################FAILED - DOMESTIC - TOP 15#########################################
+
+#Filters the data further to only contain movies that has failed
+wrangled_fail <- wrangled_gross_pass_fail %>%
+  group_by(domgross) %>%
+  filter(binary == "FAIL")%>%
+  select(title, year,domgross,binary)
+
+#orders the domestic gross numbers in decreasing order
+w_fail <- wrangled_fail[order(wrangled_fail$domgross, decreasing = TRUE),]  
+
+#gets rid of rows that should not be there
+w_fail <- w_fail[-c(4, 6,11,12,13,19,22),]
+
+#takes the top 15 movies
+w_fail <- w_fail[1:15, ]
+
+##################PASSED - INTERNATIONAL - TOP 15###################################
+
+wrangled_pass_int <- wrangled_gross_pass_fail %>%
+  group_by(intgross) %>%
+  filter(binary == "PASS")%>%
+  select(title, year,intgross,binary)
+
+#orders the domestic gross numbers in decreasing order
+w_pass_int <- wrangled_pass_int[order(wrangled_pass_int$intgross, decreasing = TRUE),]  
+
+#takes the top 15 movies
+w_pass_int <- w_pass_int[1:15, ]
+
+##################FAILED - INTERNATIONAL - TOP 15###################################
+
+wrangled_fail_int <- wrangled_gross_pass_fail %>%
+  group_by(intgross) %>%
+  filter(binary == "FAIL")%>%
+  select(title, year,intgross,binary)
+
+#orders the domestic gross numbers in decreasing order
+w_fail_int <- wrangled_fail_int[order(wrangled_fail_int$intgross, decreasing = TRUE),]  
+
+#takes the top 15 movies
+w_fail_int <- w_fail_int[1:15, ]
+
+###################################################################################
+
+#The Movies with the Highest Domestic Gross
+ggplot() +
+  geom_line(data = w_test, aes(x=year, y=domgross,group = 1, color = binary))+
+  geom_line(data = w_fail, aes(x=year, y=domgross,group = 1, color = binary))+
+  geom_point()+
+  labs(title = "The Movies with the Highest Domestic Gross",
+       x = "Year",
+       y = "Domestic Gross")
+
+#The Movies with the Highest International Gross
+ggplot() +
+  geom_line(data = w_pass_int, aes(x=year, y=intgross,group = 1, color = binary))+
+  geom_line(data = w_fail_int, aes(x=year, y=intgross,group = 1, color = binary))+
+  geom_point()+
+  labs(title = "The Movies with the Highest International Gross",
+       x = "Year",
+       y = "International Gross")
+
+```
 
 
 
