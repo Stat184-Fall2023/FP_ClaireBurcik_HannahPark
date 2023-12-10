@@ -26,7 +26,7 @@ The research questions we wanted to explore with this data set include:
 -Does budget play a role in whether a movie passes or fails the Bechdel Test?
 -Does the year the movie was released contribute to if a movie passes or fails the Bechdel Test?
 -Of the movies that fail the Bechdel Test, how many fail each criteria?
--How does the domestic and international gross compare to the pass rate of the Bechdel test and the movie’s budget?
+-How does the domestic and international gross compare to the pass rate of the Bechdel test?
 
 ### Data Exploration
 ```{r, include=FALSE}
