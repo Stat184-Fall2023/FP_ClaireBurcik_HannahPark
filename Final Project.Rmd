@@ -116,6 +116,8 @@ ggplot(count_pass_fail,
        y = "Total Movies per year")
 ```
 
+Lastly we wanted to see if there is a relationship between the domestic gross, international gross, and if the movie passed or failed the test. The main problem we ran into was that the dataset was huge so we had to use a smaller dataset. We ended up taking the top 15 movies with the highest domestic gross and highest international gross that passed and failed. We ended up with 4 different sub datasets, highest domestic gross that passed, highest domestic gross that failed, highest international gross that passed, and highest international gorss that failed. We ended up making two different visualizations that compared the highest domestic gross that passed and failed. The second visualization compared the highest international gross that passed and failed. After looking at the visualization we did not see a correlation with the gross compared to if the test passed or failed. 
+
 ```{r}
 bechdel_raw <- read.table ( 
   file = "/Users/hpark/Desktop/movies.csv",
