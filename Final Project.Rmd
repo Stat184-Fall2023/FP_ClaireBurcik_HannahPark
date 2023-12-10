@@ -85,6 +85,8 @@ ggplot(data=wrangled_budget,
   theme_minimal() +
   coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
+Third we wanted to explore the relationship between the year the movies were released and if the movie passed or failed the test. While trying to create the graph we ran into a few problems, first being what the best graph would be to accurately represent the information. After picking a stacked box plot the main problem we ran into was when counting how many movies passed or failed in a given year it would count the year (2013+2013+...) instead of counting every movie as 1. In order to account for that we had to count the a singular year instead of the year the movie was released. 
+
 ```{r}
 bechdel_raw<- read.table (
   file = "/Users/hpark/Desktop/movies.csv",
