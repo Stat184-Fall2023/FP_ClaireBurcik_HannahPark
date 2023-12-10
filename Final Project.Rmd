@@ -216,7 +216,7 @@ ggplot() +
 
 ```
 
-
+From our visualizations we did not see an overall correlation between budget, domestic gross, international gross, and year. Since this test is not a real test just a test to poke fun at movies there isn't a huge correlation between many of the attributes. 
 
 
 
