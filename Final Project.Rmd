@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = False)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 ### The Bechdel Test Dataset
 
@@ -30,7 +30,8 @@ The research questions we wanted to explore with this data set include:
 
 ### Data Exploration
 ```{r, include=FALSE}
-#ADD CODING STYLE
+#CODING STYLE: tidyverse guide
+
 #reading in the data
 bechdel_raw <- read.csv("movies.csv")
 View(bechdel_raw)
@@ -40,6 +41,7 @@ library(dplyr)
 library(ggplot2)
 library(kableExtra)
 library(janitor)
+library(magrittr)
 ```
 
 To begin our data exploration, we wanted to take a look at the relationship between budget and the test results. First, we created a box and whisker plot to display the distribution among movies that pass and movies that fail. Because of some extreme outliers, our initial box plot was difficult to read. You couldn't get a good idea of the differences between statistics like the median, Q1, and Q3 for movies that passed vs failed because the intervals on the plot were so large.
@@ -59,6 +61,7 @@ ggplot(data=wrangled_budget,
   geom_boxplot(fill = "#112446") +
   theme_minimal()
 ```
+
 To resolve this issue, we added a line of code that excluded outliers from the visualization. From this plot, we can see that, overall, the movies that failed the test had slightly higher summary statistics for their budgets.
 
 In addition, we wanted to explore further and compare the distributions of budget among movies that passed, movies that failed due to having no lead women characters, films that failed due to the female characters not talking to each other, movies that failed due to the conversations being about men, and those that were considered dubious. This visual painted a slightly different picture. For all criteria except for no talk, the median budgets varied by a small interval. However, the Q3 values for all of the failing criteria were greater than the movies that passed (ok). 
@@ -73,6 +76,7 @@ ggplot(data=wrangled_budget,
   geom_boxplot(fill = "#112446") +
   theme_minimal()+
   coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
+
 #more detailed
 ggplot(data=wrangled_budget, 
   mapping=aes(x = budget, y = clean_test))+
@@ -85,25 +89,62 @@ ggplot(data=wrangled_budget,
   theme_minimal() +
   coord_cartesian(xlim = quantile(wrangled_budget$budget, c(0.1, 0.9)))
 ```
-Third we wanted to explore the relationship between the year the movies were released and if the movie passed or failed the test. While trying to create the graph we ran into a few problems, first being what the best graph would be to accurately represent the information. After picking a stacked box plot the main problem we ran into was when counting how many movies passed or failed in a given year it would count the year (2013+2013+...) instead of counting every movie as 1. In order to account for that we had to count the a singular year instead of the year the movie was released. 
+
+Another aspect of the data that our group wanted to investigate was looking at the frequencies of movies failing each criteria. We did this by creating a frequency table that displayed the number of movies per decade that failed each criteria. From this table, we discovered a few things. For one, there were over 100 movies that were not assigned to a decade code. With the data set being so large, we hadn't noticed that some of the cases had incomplete entries. Because such a large number of movies didn't correspond to a decade code, the frequencies may be a little skewed. With the entries that did correspond to a given decade, we found that the decade with the largest number of failures was from decade 2 or the 2000s. When it came to criteria, the criteria that resulted in the largest number of failures was notalk. This means that a lot of movies failed because their lead female characters didn't talk to one another. One frequency that further supports this idea is that one of the largest frequencies (25.99%) corresponds to decade 2 with movies that failed due to female characters not talking to one another (notalk). 
 
 ```{r}
-bechdel_raw<- read.table (
-  file = "/Users/hpark/Desktop/movies.csv",
-  fill = TRUE,
-  header = TRUE,
-  quote = "",
-  sep = ","
-)
+frequency_data <- bechdel_raw %>%
+  group_by(clean_test)%>%
+  #reduce to just failure cases
+  filter(binary=="FAIL")%>%
+  select(clean_test, decade.code)
+
+failure_table <-frequency_data %>%
+   #makes the decade.code correspond to rows and clean_test correspond to columns
+   tabyl(decade.code, clean_test, show_na=FALSE)%>% #excludes movies that aren't assigned to a decade code
+   adorn_totals(where = c("row", "col") ) %>%
+   adorn_percentages(denominator = "all") %>%
+   adorn_pct_formatting(digits = 2) %>% 
+   #Change labels
+   adorn_title(
+     placement = "combined",
+     row_name = "Decade",
+     col_name = "Test Results") 
+ 
+#add absolute frequencies
+formatNs <- attr(failure_table, "core") %>%  
+  adorn_totals(where = c("row", "col")) %>%
+  mutate(
+     across(.cols = where(is.numeric), .fns = ~format(.x, big.mark = ","))
+   )
+ 
+failure_freq_tab <- failure_table %>%
+  adorn_ns(position= "front", ns = formatNs)
+
+failure_freq_tab %>%
+   kable(
+     caption = "Number of Failures per Decade, per Criteria", #add title
+     booktabs = TRUE,
+     align = c("l", rep("c", 6))
+   )%>%
+   kableExtra::kable_styling(
+       bootstrap_options = c("striped"),
+       font_size = 16
+     )
+```
+
+Third, we wanted to explore the relationship between the year the movies were released and if the movie passed or failed the test. While trying to create the graph we ran into a few problems, first being what the best graph would be to accurately represent the information. After picking a stacked box plot the main problem we ran into was when counting how many movies passed or failed in a given year it would count the year (2013+2013+...) instead of counting every movie as 1. In order to account for that we had to count them as singular year instead of the year the movie was released. 
+
+```{r, message=FALSE}
+
 #Load the packages 
 library(magrittr)
 
 #creates a table that only has the year and binary column if the movie passed or failed
 wrangled_year_pass_fail<- bechdel_raw %>%
   group_by(year) %>%
-  filter(binary = "FAIL" | binary = "PASS")%>% #only included rows that have Pass or-Fail in the binary column~
+  filter(binary == "FAIL" | binary == "PASS")%>% #only included rows that have Pass or-Fail in the binary column~
   select(year,binary) #only included the columns year and binary
-  
   
 #counts the frequency based on the year on if it passed or failed
 count_pass_fail <- wrangled_year_pass_fail %>% group_by(year,binary) %>% summarise(count=n())
@@ -116,16 +157,9 @@ ggplot(count_pass_fail,
        y = "Total Movies per year")
 ```
 
-Lastly we wanted to see if there is a relationship between the domestic gross, international gross, and if the movie passed or failed the test. The main problem we ran into was that the dataset was huge so we had to use a smaller dataset. We ended up taking the top 15 movies with the highest domestic gross and highest international gross that passed and failed. We ended up with 4 different sub datasets, highest domestic gross that passed, highest domestic gross that failed, highest international gross that passed, and highest international gorss that failed. We ended up making two different visualizations that compared the highest domestic gross that passed and failed. The second visualization compared the highest international gross that passed and failed. After looking at the visualization we did not see a correlation with the gross compared to if the test passed or failed. 
+Lastly, we wanted to see if there is a relationship between the domestic gross, international gross, and if the movie passed or failed the test. The main problem we ran into was that the data set was huge so we had to use a smaller data set. We ended up taking the top 15 movies with the highest domestic gross and highest international gross that passed and failed. We ended up with 4 different sub data sets, highest domestic gross that passed, highest domestic gross that failed, highest international gross that passed, and highest international gross that failed. We ended up making two different visualizations that compared the highest domestic gross that passed and failed. The second visualization compared the highest international gross that passed and failed. After looking at the visualization we did not see a correlation with the gross compared to if the test passed or failed. 
 
 ```{r}
-bechdel_raw <- read.table ( 
-  file = "/Users/hpark/Desktop/movies.csv",
-  fill = TRUE,
-  header = TRUE, 
-  quote = "",
-  sep = ","
-)
 
 #creates a table that only has the columns title, year, domgross,intgross,and binary.
 #the table also only contains if the binary column has either Pass or Fail
@@ -176,7 +210,7 @@ wrangled_pass_int <- wrangled_gross_pass_fail %>%
   select(title, year,intgross,binary)
 
 #orders the domestic gross numbers in decreasing order
-w_pass_int <- wrangled_pass_int[order(wrangled_pass_int$intgross, decreasing = TRUE),]  
+w_pass_int <-wrangled_pass_int[order(wrangled_pass_int$intgross, decreasing = TRUE),]  
 
 #takes the top 15 movies
 w_pass_int <- w_pass_int[1:15, ]
@@ -189,7 +223,7 @@ wrangled_fail_int <- wrangled_gross_pass_fail %>%
   select(title, year,intgross,binary)
 
 #orders the domestic gross numbers in decreasing order
-w_fail_int <- wrangled_fail_int[order(wrangled_fail_int$intgross, decreasing = TRUE),]  
+w_fail_int <-wrangled_fail_int[order(wrangled_fail_int$intgross, decreasing = TRUE),]  
 
 #takes the top 15 movies
 w_fail_int <- w_fail_int[1:15, ]
@@ -216,7 +250,6 @@ ggplot() +
 
 ```
 
-From our visualizations we did not see an overall correlation between budget, domestic gross, international gross, and year. Since this test is not a real test just a test to poke fun at movies there isn't a huge correlation between many of the attributes. 
+### Conclusion
 
-
-
+From our visualizations, we did not see any correlations between budget, domestic gross, international gross, and year. In order to dive deeper into how the factors we investigated could impact a movies Bechdel Test result, one would have to undergo a more complex statistical analysis. However, our visualizations do point out some patterns. For example the budget distribution overall for movies that failed was slightly greater than those that passed. Overall, since this test is not a real test and is used more to poke fun at movies, there isn't an apparent correlation between many of the attributes. 
